@@ -1,6 +1,10 @@
 # GoogleCloud-SecurityCommandCenter-AzureSentinel-Integration
 
-Create a .env file with the following environment variables
+This connector allows you to send security alerts from Google Cloud Security Command Center to Microsoft Azure Sentinel Log Analytics Workspace in almost realtime.
+
+## Step-by-Step Setup Instructions
+
+### Create a .env file with the following environment variables
 ```
 customer_id=YOUR_LOG_ANALYTICS_WORKSPACE_ID
 shared_key=YOUR_PRIMARY_OR_SECONDARY_CLIENT_AUTHENTICATION_KEY
