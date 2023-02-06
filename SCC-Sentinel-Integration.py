@@ -16,9 +16,20 @@
 
 import base64
 import functions_framework
+from datetime import datetime
+
+WORKSPACE_ID = ''
+WORKSPACE_KEY = ''
+LOG_ANALYTICS_WORKSPACE_TABLE_NAME = ''
 
 # Triggered from a message on SCC Cloud Pub/Sub topic.
 @functions_framework.cloud_event
 def scc_pubsub_subscribe(scc_event):
     scc_finding = base64.b64decode(scc_event.data["message"]["data"]).decode()
     print("SCC Finding: ", scc_finding)
+
+    event_message='{"time":'+ datetime.now() +',"host":"GoogleCloud","source":"SecurityCommandCenter","sourcetype":"PubSub",SCC' + '"event":'+scc_finding+'}'
+    send_to_sentinel(event_message)
+
+def send_to_sentinel(event_message):
+    print("Sending log to Sentinel: ", event_message)
