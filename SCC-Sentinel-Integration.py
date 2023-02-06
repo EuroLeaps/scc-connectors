@@ -37,7 +37,7 @@ log_type = os.environ["log_type"]
 @functions_framework.cloud_event
 def scc_pubsub_subscribe(scc_event):
     scc_finding = base64.b64decode(scc_event.data["message"]["data"]).decode()
-    print("SCC Finding: ", scc_finding)
+    print("SCC Finding Received: ", scc_finding)
 
     logdata='{"host":"GoogleCloud","source":"SecurityCommandCenter","RawAlert":'+scc_finding+'}'
     send_to_sentinel(customer_id, shared_key, logdata, log_type)
@@ -54,7 +54,7 @@ def build_signature(customer_id, shared_key, date, content_length, method, conte
 
 # Build and send a request to the POST API
 def send_to_sentinel(customer_id, shared_key, logdata, log_type):
-    print("Sending log to Sentinel: ", logdata)
+    print("Sending log to Sentinel..")
     method = 'POST'
     content_type = 'application/json'
     resource = '/api/logs'
