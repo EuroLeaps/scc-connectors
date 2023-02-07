@@ -2,6 +2,9 @@
 
 This connector allows you to send security alerts from Google Cloud Security Command Center to Microsoft Azure Sentinel Log Analytics Workspace in almost realtime.
 
+## Architecture
+
+
 ## Step-by-Step Setup Instructions
 
 ### Setting up Azure Sentinel Log Analytics Workspace
