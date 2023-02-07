@@ -2,8 +2,17 @@
 
 This connector allows you to send security alerts from Google Cloud Security Command Center to Microsoft Azure Sentinel Log Analytics Workspace in almost realtime.
 
-### Architecture
+### Architecture Flow
+
 ![Alt text](architecture.png?raw=true "Integration Architecture")
+
+In the above diagram:
+1. SCC streams security alerts to a PubSub queue
+2. A Cloud function is setup that subscribes to the PubSub queue and gets triggered by EventArc
+3. The Cloud Function calls the Data Collection API of Azure Sentinel with HMAC authorization
+4. On the Azure Sentinel side, the Data Collection Endpoint (DCE) routes the security alert to a custom table in the Log Analytics Workspace
+
+End-to-end latency from when an alert is triggered to when it appears in Sentinel is within a couple of seconds
 
 ### Step-by-Step Setup Instructions
 
