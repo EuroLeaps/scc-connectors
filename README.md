@@ -27,7 +27,20 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
    - Setup EventArc trigger and deploy the function
 4. Trigger an SCC Alert and run a query on the Sentinel Log Table to view the finding
 
+#### Create a continuous pubsub export of SCC Alerts
+1. Go to GCP Console -> Security Command Center -> Settings -> Continuous Exports
+2. Create a new PubSub Export as shown in the screenshot
+3. You could also use a query to filter out only certain events (e.g. critical/high severity) that would be exported to the PubSub 
+
+![Alt text](screenshots/1.png?raw=true "SCC PubSub Export")
+
 #### Setting up Azure Sentinel Log Analytics Workspace
+1. Go to Azure Console -> Log Analytics Workspaces -> Create
+2. Create a new Workspace or use an existing one
+3. After creation, the Workspace would look like as in the screenshot
+4. Take note of the Workspace ID
+
+![Alt text](screenshots/2.png?raw=true "Log Analytics Workspace")
 
 #### Create a .env file with the following environment variables
 ```
