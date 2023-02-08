@@ -34,7 +34,7 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 
 ![Alt text](screenshots/1.png?raw=true "SCC PubSub Export")
 
-#### Setting up Azure Sentinel Log Analytics Workspace
+#### Setting up Azure Sentinel Log Analytics Workspace 1/2
 1. Go to Azure Console -> Log Analytics Workspaces -> Create
 2. Create a new Workspace or use an existing one
 3. After creation, the Workspace would look like as in the screenshot
@@ -42,13 +42,44 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 
 ![Alt text](screenshots/2.png?raw=true "Log Analytics Workspace")
 
-#### Create a .env file with the following environment variables
+#### Setting up Azure Sentinel Log Analytics Workspace 2/2
+1. Go to Azure Console -> Log Analytics Workspaces -> Agents Management
+2. Expand Log analytics agents instructions
+3. Take a note of the Primary or Secondary key (either of them). This will be required to construct the SHA256-HMAC authorization header to call the Sentinel data collection API
+
+![Alt text](screenshots/4.png?raw=true "Agents config")
+
+#### Create a Data Collection Endpoint in Azure
+1. Go to Azure Console -> Monitor -> Data Collection Endpoints -> Create
+2. Create a new Data Collection Endpoint, it would look like as in the screenshot
+
+![Alt text](screenshots/3.png?raw=true "DCE")
+
+#### Create a Cloud Function in Google Cloud 1/2
+1. Go to GCP Console -> Cloud Functions -> Create Function
+2. Select 2nd Gen Environment
+3. Add Eventarc Trigger with Cloud Pub/Sub as the Event Provider and the scc-pubsub topic that you created earlier
+4. Click Next
+
+![Alt text](screenshots/5.png?raw=true "Cloud Function")
+
+#### Create a Cloud Function in Google Cloud 2/2
+1. Download the code from Github and put in in Cloud Function
+2. Select Python3 as the Runtime
+3. Create .env file with the following credentials that you noted from Azure earlier
 ```
 customer_id=YOUR_LOG_ANALYTICS_WORKSPACE_ID
 shared_key=YOUR_PRIMARY_OR_SECONDARY_CLIENT_AUTHENTICATION_KEY
 log_type=YOUR_CUSTOM_LOG_TABLE_NAME
 ```
+5. Deploy the function
 
-#### Create a continuous pubsub export of send SCC Alerts
+![Alt text](screenshots/6.png?raw=true "Cloud Function")
 
-#### Create a Cloud Function in Google Cloud with code in this repository
+#### View SCC Alerts in Azure Sentinel
+1. Trigger an SCC Alert in GCP Console (e.g. by opening a firewall port)
+2. Go to Azure -> Log Analytics Workspace -> Logs
+3. Create a New Query and write the custom table name appended by ‘_CL’ and hit run
+4. You will see the SCC findings listed as in the screenshot
+
+![Alt text](screenshots/7.png?raw=true "SCC Alerts in Sentinel")
