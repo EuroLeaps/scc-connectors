@@ -19,12 +19,12 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 
 1. Create a continuous pubsub export of SCC Alerts
 2. Set up Azure Sentinel 
-2a. Create a Log Analytics Workspace
-2b. Create a Data Collection Endpoint
+   - Create a Log Analytics Workspace
+   - Create a Data Collection Endpoint
 3. Create a Cloud Function in Google Cloud
-3a. Download python source code from this Github repository (you don’t need to modify the code)
-3b. Create .env file and provide credentials
-3c. Setup EventArc trigger and deploy the function
+   - Download python source code from this Github repository (you don’t need to modify the code)
+   - Create .env file and provide credentials
+   - Setup EventArc trigger and deploy the function
 4. Trigger an SCC Alert and run a query on the Sentinel Log Table to view the finding
 
 #### Setting up Azure Sentinel Log Analytics Workspace
