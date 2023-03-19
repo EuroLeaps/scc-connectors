@@ -20,7 +20,6 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 1. Create a continuous pubsub export of SCC Alerts
 2. Set up Azure Sentinel 
    - Create a Log Analytics Workspace
-   - Create a Data Collection Endpoint
 3. Create a Cloud Function in Google Cloud
    - Download python source code from this Github repository (you don’t need to modify the code)
    - Create .env file and provide credentials
@@ -48,12 +47,6 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 3. Take a note of the Primary or Secondary key (either of them). This will be required to construct the SHA256-HMAC authorization header to call the Sentinel data collection API
 
 ![Alt text](screenshots/4.png?raw=true "Agents config")
-
-#### Create a Data Collection Endpoint in Azure
-1. Go to Azure Console -> Monitor -> Data Collection Endpoints -> Create
-2. Create a new Data Collection Endpoint, it would look like as in the screenshot
-
-![Alt text](screenshots/3.png?raw=true "DCE")
 
 #### Create a Cloud Function in Google Cloud 1/2
 1. Go to GCP Console -> Cloud Functions -> Create Function
