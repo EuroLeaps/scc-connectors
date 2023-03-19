@@ -25,22 +25,29 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Update the customer ID to your Log Analytics workspace ID
-customer_id = os.environ["customer_id"]
+try:
+    AZURE_LOG_ANALTYTICS_WORKSPACE_ID = os.environ["AZURE_LOG_ANALTYTICS_WORKSPACE_ID"]
+except KeyError:
+    print("AZURE_LOG_ANALTYTICS_WORKSPACE_ID not found in env file.. Trying Secret Manager")
 
-# For the shared key, use either the primary or the secondary Connected Sources client authentication key   
-shared_key = os.environ["shared_key"]
+# For the shared key, use either the primary or the secondary Connected Sources client authentication key 
+# If no name is provided as environment variable, then scc_table will be used as default
+try: 
+    AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY = os.environ["AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY"]
+except KeyError:
+    print("AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY not found in env file.. Trying Secret Manager")
 
-# The log type is the name of the event that is being submitted
-log_type = os.environ["log_type"]
+# The name of the Log Analytics custom table where SCC Alerts will be stored
+AZURE_LOG_ANALYTICS_CUSTOM_TABLE = os.environ.get("AZURE_LOG_ANALYTICS_CUSTOM_TABLE", "scc_table")
 
 # Triggered from a message on SCC Cloud Pub/Sub topic.
 @functions_framework.cloud_event
-def scc_pubsub_subscribe(scc_event):
+def entry_point_function(scc_event):
     scc_finding = base64.b64decode(scc_event.data["message"]["data"]).decode()
     print("SCC Finding Received: ", scc_finding)
 
     logdata='{"host":"GoogleCloud","source":"SecurityCommandCenter","RawAlert":'+scc_finding+'}'
-    send_to_sentinel(customer_id, shared_key, logdata, log_type)
+    send_to_sentinel(AZURE_LOG_ANALTYTICS_WORKSPACE_ID, AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY, logdata, AZURE_LOG_ANALYTICS_CUSTOM_TABLE)
 
 # Build the API signature
 def build_signature(customer_id, shared_key, date, content_length, method, content_type, resource):
@@ -53,20 +60,20 @@ def build_signature(customer_id, shared_key, date, content_length, method, conte
     return authorization
 
 # Build and send a request to the POST API
-def send_to_sentinel(customer_id, shared_key, logdata, log_type):
-    print("Sending log to Sentinel..")
+def send_to_sentinel(law_id, auth_key, logdata, table_name):
+    print("Sending SCC Alert log to Azure Sentinel..")
     method = 'POST'
     content_type = 'application/json'
     resource = '/api/logs'
     rfc1123date = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
     content_length = len(logdata)
-    signature = build_signature(customer_id, shared_key, rfc1123date, content_length, method, content_type, resource)
-    uri = 'https://' + customer_id + '.ods.opinsights.azure.com' + resource + '?api-version=2016-04-01'
+    signature = build_signature(law_id, auth_key, rfc1123date, content_length, method, content_type, resource)
+    uri = 'https://' + law_id + '.ods.opinsights.azure.com' + resource + '?api-version=2016-04-01'
 
     headers = {
         'content-type': content_type,
         'Authorization': signature,
-        'Log-Type': log_type,
+        'Log-Type': table_name,
         'x-ms-date': rfc1123date
     }
 
