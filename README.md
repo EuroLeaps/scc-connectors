@@ -82,3 +82,6 @@ PROJECT_ID=YOUR_GCP_PROJECT_ID
 4. You will see the SCC findings listed as in the screenshot
 
 ![Alt text](screenshots/7.png?raw=true "SCC Alerts in Sentinel")
+
+### Conclusion
+Congrats on successfully deploying this connector. If you have any feedback, or need any help in setting this up, please reach out to amiacs@gmail.com.
