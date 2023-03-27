@@ -61,7 +61,8 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 2. Select Python3 as the Runtime
 3. Create .env file with the following credentials that you noted from Azure earlier
 
-Please note that the Log Analytics custom table is created automatically in Azure, if it does not exist. This is the recommended way to deploy this connector.
+**Please note that the Log Analytics custom table is created automatically in Azure, if it does not exist. This is the recommended way to deploy this connector.**
+
 Also, as a best practice, you can save the Log Analytics Workspace ID and Key in GCP Secret Manager. This connector first tries to read the .env file, and if it does not find the values, it will try GCP Secret Manager using the PROJECT_ID mentioned in the .env file.
 ```
 AZURE_LOG_ANALTYTICS_WORKSPACE_ID=YOUR_LOG_ANALYTICS_WORKSPACE_ID
