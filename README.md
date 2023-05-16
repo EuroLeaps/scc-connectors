@@ -14,7 +14,7 @@ In the above diagram:
 3. The Cloud Function calls the Data Collection API of Azure Sentinel with HMAC-SHA256 authorization
 4. On the Azure Sentinel side, the security alert is routed to a custom table in the Log Analytics Workspace
 
-End-to-end latency from when an alert is triggered to when it appears in Sentinel is within a couple of seconds. It does take some time (10-15 minutes) for the first event to show up in Sentinel, as the Sentinel tables get initialized.
+End-to-end latency from when an alert is triggered to when it appears in Sentinel is within a couple of seconds. It does take some time (10-15 minutes) for the first SCC alert to show up in Sentinel, as the Sentinel table gets initialized.
 
 ### Step-by-Step Setup Instructions
 
@@ -23,7 +23,7 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
    - Create a Log Analytics Workspace
 3. Create a Cloud Function in Google Cloud
    - Download python source code from this Github repository (you don’t need to modify the code)
-   - Create .env file and provide credentials
+   - Create .env file and provide credentials OR put the credentials in GCP secrets manager
    - Setup EventArc trigger and deploy the function
 4. Trigger an SCC Alert and run a query on the Sentinel Log Table to view the finding
 
