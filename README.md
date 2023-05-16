@@ -58,14 +58,11 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 ![Alt text](screenshots/5.png?raw=true "Cloud Function")
 
 #### Create a Cloud Function in Google Cloud 2/2
-1. Download the code from Github and put in in Cloud Function
+1. Download the code from Github (main.py, requirements.txt, .env.example) and put in in Cloud Function
 2. Select Python3 as the Runtime
-3. Create .env file with the following credentials that you noted from Azure earlier
+3. Rename .env.example to .env and put the following credentials that you noted from Azure earlier
 4. Set the entry point as entry_point_function
-
-**Please note that the Log Analytics custom table is created automatically in Azure, if it does not exist. This is the recommended way to deploy this connector.**
-
-Also, as a best practice, you can save the Log Analytics Workspace ID and Key in GCP Secret Manager. This connector first tries to read the .env file, and if it does not find the values, it will try GCP Secret Manager using the PROJECT_ID mentioned in the .env file.
+5. Deploy the function
 ```
 AZURE_LOG_ANALTYTICS_WORKSPACE_ID=YOUR_LOG_ANALYTICS_WORKSPACE_ID
 AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY=YOUR_PRIMARY_OR_SECONDARY_CLIENT_AUTHENTICATION_KEY
@@ -73,7 +70,9 @@ AZURE_LOG_ANALYTICS_CUSTOM_TABLE=YOUR_CUSTOM_LOG_TABLE_NAME
 
 PROJECT_ID=YOUR_GCP_PROJECT_ID
 ```
-5. Deploy the function
+**Please note that the Log Analytics custom table is created automatically in Azure, if it does not exist. This is the recommended way to deploy this connector.**
+
+Also, as a best practice, you can save the Log Analytics Workspace ID and Key in GCP Secret Manager. This connector first tries to read the .env file, and if it does not find the values, it will try GCP Secret Manager using the PROJECT_ID mentioned in the .env file.
 
 ![Alt text](screenshots/6.png?raw=true "Cloud Function")
 
