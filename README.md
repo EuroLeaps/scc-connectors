@@ -72,7 +72,7 @@ PROJECT_ID=YOUR_GCP_PROJECT_ID
 ```
 **Please note that the Log Analytics custom table is created automatically in Azure, if it does not exist. This is the recommended way to deploy this connector.**
 
-Also, as a best practice, you can save the Log Analytics Workspace ID and Key in GCP Secret Manager. This connector first tries to read the .env file, and if it does not find the values, it will try GCP Secret Manager using the PROJECT_ID mentioned in the .env file.
+Also, as a best practice, you can save the Log Analytics Workspace ID and Key in GCP Secret Manager. This connector first tries to read the .env file, and if it does not find the values, it will try GCP Secret Manager using the PROJECT_ID mentioned in the .env file. You need to ensure that the Cloud Function's service account has the permission to read secrets from the GCP Secrets Manager.
 
 ![Alt text](screenshots/6.png?raw=true "Cloud Function")
 
