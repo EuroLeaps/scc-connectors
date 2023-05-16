@@ -61,6 +61,7 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 1. Download the code from Github and put in in Cloud Function
 2. Select Python3 as the Runtime
 3. Create .env file with the following credentials that you noted from Azure earlier
+4. Set the entry point as entry_point_function
 
 **Please note that the Log Analytics custom table is created automatically in Azure, if it does not exist. This is the recommended way to deploy this connector.**
 
