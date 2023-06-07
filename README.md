@@ -84,5 +84,10 @@ Also, as a best practice, you can save the Log Analytics Workspace ID and Key in
 
 ![Alt text](screenshots/7.png?raw=true "SCC Alerts in Sentinel")
 
+### Troubleshooting
+If the connector does not work, please inspect the logs in Google Cloud Logging as in the screenshot below.
+
+![Alt text](screenshots/8.png?raw=true "Connector logs in Google Cloud Logging")
+
 ### Conclusion
 Congrats on successfully deploying this connector! If you have any feedback, or need any help in setting this up, please reach out to amiacs@gmail.com.
