@@ -29,7 +29,7 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 
 #### Create a continuous pubsub export of SCC Alerts
 1. Go to GCP Console -> Security Command Center -> Settings -> Continuous Exports
-2. Create a new PubSub Export as shown in the screenshot
+2. Create a new PubSub Export as shown in the screenshot. This also requires you to create a pubsub topic.
 3. You could also use a query to filter out only certain events (e.g. critical/high severity) that would be exported to the PubSub 
 
 ![Alt text](screenshots/1.png?raw=true "SCC PubSub Export")
