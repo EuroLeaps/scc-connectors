@@ -22,15 +22,13 @@ import hashlib
 import hmac
 import os
 from google.cloud import secretmanager
-from google.cloud import logging
+import google.cloud.logging
 from dotenv import load_dotenv
 load_dotenv()
 
 # Setup logging
-logging_client = logging.Client()
-log_name = "SCC-Sentinel Connector"
-logger = logging_client.logger(log_name)
-
+client = google.cloud.logging.Client()
+logger = client.logger("SCC_Sentinel_Connector")
 
 PROJECT_ID = os.environ.get("PROJECT_ID", "")
 
@@ -64,7 +62,7 @@ try:
 except KeyError:
     logger.log_text("AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY not found in env file.. Trying Secret Manager")
     if(PROJECT_ID != ""):
-        logger.log_text('PROJECT_ID ', PROJECT_ID)
+        logger.log_text(f'PROJECT_ID {PROJECT_ID}')
         AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY = get_secret_from_secret_manager("AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY")
         logger.log_text('Retrieved AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY')
     else:
@@ -80,7 +78,7 @@ logger.log_text(f'Retrieved Azure Log Analytics WorkspaceID and Key successfully
 def entry_point_function(scc_event):
     try:
         scc_finding = base64.b64decode(scc_event.data["message"]["data"]).decode()
-        logger.log_text("SCC Finding Received: ", scc_finding)
+        logger.log_text(f"SCC Finding Received from PubSub: {scc_finding}")
 
         logdata='{"host":"GoogleCloud","source":"SecurityCommandCenter","RawAlert":'+scc_finding+'}'
         send_to_sentinel(AZURE_LOG_ANALTYTICS_WORKSPACE_ID, AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY, logdata, AZURE_LOG_ANALYTICS_CUSTOM_TABLE)
@@ -117,6 +115,6 @@ def send_to_sentinel(law_id, auth_key, logdata, table_name):
 
     response = requests.post(uri, data=logdata, headers=headers)
     if (response.status_code >= 200 and response.status_code <= 299):
-        logger.log_text('Sentinel API call successful with response code {response.status_code}')
+        logger.log_text(f'Sentinel API call successful with response code {response.status_code}')
     else:
         logger.log_text(f"Error calling Sentinel API, response code: {response.status_code}", severity="ERROR")
