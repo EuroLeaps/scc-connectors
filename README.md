@@ -43,7 +43,7 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 ![Alt text](screenshots/2.png?raw=true "Log Analytics Workspace")
 
 #### Setting up Azure Sentinel Log Analytics Workspace 2/2
-1. Go to Azure Console -> Log Analytics Workspaces -> Agents Management
+1. Go to Azure Console -> Log Analytics Workspaces -> Agents
 2. Expand Log analytics agents instructions
 3. Take a note of the Primary or Secondary key (either of them). This will be required to construct the SHA256-HMAC authorization header to call the Sentinel data collection API
 
