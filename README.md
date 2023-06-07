@@ -52,7 +52,7 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 #### Create a Cloud Function in Google Cloud 1/2
 1. Go to GCP Console -> Cloud Functions -> Create Function
 2. Select 2nd Gen Environment
-3. Add Eventarc Trigger with Cloud Pub/Sub as the Event Provider and the scc-pubsub topic that you created earlier
+3. Add Eventarc Trigger with Cloud Pub/Sub as the Event Provider and the scc-pubsub topic that you created earlier. The UI might ask you to enable certain APIs during this step, if they were not enabled earlier. Also, please make sure that you grant the necessary IAM role during the creation of the EventArc trigger. It will be shown in the UI, and it is difficult to miss it.
 4. Click Next
 
 ![Alt text](screenshots/5.png?raw=true "Cloud Function")
