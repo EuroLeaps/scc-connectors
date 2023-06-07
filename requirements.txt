@@ -2,3 +2,4 @@ functions-framework==3.*
 requests
 python-dotenv
 google-cloud-secret-manager
+google-cloud-logging

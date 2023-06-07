@@ -22,11 +22,17 @@ import hashlib
 import hmac
 import os
 from google.cloud import secretmanager
+from google.cloud import logging
 from dotenv import load_dotenv
 load_dotenv()
 
+# Setup logging
+logging_client = logging.Client()
+log_name = "SCC-Sentinel Connector"
+logger = logging_client.logger(log_name)
+
+
 PROJECT_ID = os.environ.get("PROJECT_ID", "")
-print('PROJECT_ID ', PROJECT_ID)
 
 def get_secret_from_secret_manager(secret_id):
     client = secretmanager.SecretManagerServiceClient()
@@ -34,7 +40,7 @@ def get_secret_from_secret_manager(secret_id):
     try:
         response = client.access_secret_version(request={"name": resource_name})
     except Exception as e:
-        print(f"Error in retreiving secret: {secret_id}: ", e.message, e.args)
+        logger.log_text(f"Error in retreiving secret: {secret_id}: {e.message}, {e.args}", severity="ERROR")
     secret_value = response.payload.data.decode('UTF-8')
     return secret_value
 
@@ -42,13 +48,13 @@ def get_secret_from_secret_manager(secret_id):
 try:
     AZURE_LOG_ANALTYTICS_WORKSPACE_ID = os.environ["AZURE_LOG_ANALTYTICS_WORKSPACE_ID"]
 except KeyError:
-    print("AZURE_LOG_ANALTYTICS_WORKSPACE_ID not found in env file.. Trying Secret Manager")
+    logger.log_text("AZURE_LOG_ANALTYTICS_WORKSPACE_ID not found in env file.. Trying Secret Manager")
     if(PROJECT_ID != ""):
-        print('PROJECT_ID ', PROJECT_ID)
+        logger.log_text('PROJECT_ID ', PROJECT_ID)
         AZURE_LOG_ANALTYTICS_WORKSPACE_ID = get_secret_from_secret_manager("AZURE_LOG_ANALTYTICS_WORKSPACE_ID")
-        print('Retrieved AZURE_LOG_ANALTYTICS_WORKSPACE_ID')
+        logger.log_text('Retrieved AZURE_LOG_ANALTYTICS_WORKSPACE_ID')
     else:
-        print("PROJECT_ID not found in env file.. Cannot use Secret Manager. Exiting..")
+        logger.log_text("PROJECT_ID not found in env file.. Cannot use Secret Manager. Exiting..", severity="ERROR")
         exit()
 
 # For the shared key, use either the primary or the secondary Connected Sources client authentication key 
@@ -56,26 +62,30 @@ except KeyError:
 try: 
     AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY = os.environ["AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY"]
 except KeyError:
-    print("AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY not found in env file.. Trying Secret Manager")
+    logger.log_text("AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY not found in env file.. Trying Secret Manager")
     if(PROJECT_ID != ""):
-        print('PROJECT_ID ', PROJECT_ID)
+        logger.log_text('PROJECT_ID ', PROJECT_ID)
         AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY = get_secret_from_secret_manager("AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY")
-        print('Retrieved AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY')
+        logger.log_text('Retrieved AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY')
     else:
-        print("PROJECT_ID not found in env file.. Cannot use Secret Manager. Exiting..")
+        logger.log_text("PROJECT_ID not found in env file.. Cannot use Secret Manager. Exiting..", severity="ERROR")
         exit()
 
 # The name of the Log Analytics custom table where SCC Alerts will be stored
 AZURE_LOG_ANALYTICS_CUSTOM_TABLE = os.environ.get("AZURE_LOG_ANALYTICS_CUSTOM_TABLE", "scc_table")
+logger.log_text(f'Retrieved Azure Log Analytics WorkspaceID and Key successfully. Custom table: {AZURE_LOG_ANALYTICS_CUSTOM_TABLE} GCP ProjectID: {PROJECT_ID}')
 
 # Triggered from a message on SCC Cloud Pub/Sub topic.
 @functions_framework.cloud_event
 def entry_point_function(scc_event):
-    scc_finding = base64.b64decode(scc_event.data["message"]["data"]).decode()
-    print("SCC Finding Received: ", scc_finding)
+    try:
+        scc_finding = base64.b64decode(scc_event.data["message"]["data"]).decode()
+        logger.log_text("SCC Finding Received: ", scc_finding)
 
-    logdata='{"host":"GoogleCloud","source":"SecurityCommandCenter","RawAlert":'+scc_finding+'}'
-    send_to_sentinel(AZURE_LOG_ANALTYTICS_WORKSPACE_ID, AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY, logdata, AZURE_LOG_ANALYTICS_CUSTOM_TABLE)
+        logdata='{"host":"GoogleCloud","source":"SecurityCommandCenter","RawAlert":'+scc_finding+'}'
+        send_to_sentinel(AZURE_LOG_ANALTYTICS_WORKSPACE_ID, AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY, logdata, AZURE_LOG_ANALYTICS_CUSTOM_TABLE)
+    except Exception as e:
+        logger.log_text(f'Error in SCC-Sentinel connector: Type {type(e)} Args {e.args} Object {e}', severity="ERROR")
 
 # Build the API signature
 def build_signature(customer_id, shared_key, date, content_length, method, content_type, resource):
@@ -89,7 +99,7 @@ def build_signature(customer_id, shared_key, date, content_length, method, conte
 
 # Build and send a request to the POST API
 def send_to_sentinel(law_id, auth_key, logdata, table_name):
-    print("Sending SCC Alert log to Azure Sentinel..")
+    logger.log_text("Sending SCC Alert log to Azure Sentinel..")
     method = 'POST'
     content_type = 'application/json'
     resource = '/api/logs'
@@ -107,6 +117,6 @@ def send_to_sentinel(law_id, auth_key, logdata, table_name):
 
     response = requests.post(uri, data=logdata, headers=headers)
     if (response.status_code >= 200 and response.status_code <= 299):
-        print('Sentinel API Accepted: ', response.status_code)
+        logger.log_text('Sentinel API call successful with response code {response.status_code}')
     else:
-        print("Error calling Sentinel API, response code: {}".format(response.status_code))
+        logger.log_text(f"Error calling Sentinel API, response code: {response.status_code}", severity="ERROR")
