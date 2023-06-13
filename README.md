@@ -58,7 +58,7 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 ![Alt text](screenshots/5.png?raw=true "Cloud Function")
 
 #### Create a Cloud Function in Google Cloud 2/2
-1. Download the code from Github (main.py, requirements.txt, .env.example) and put in in Cloud Function
+1. Download the code from Github (src/main.py, src/requirements.txt, src/.env.example) and put in in Cloud Function
 2. Select Python3 as the Runtime
 3. Rename .env.example to .env and put the following credentials that you noted from Azure earlier
 4. Set the entry point as entry_point_function
