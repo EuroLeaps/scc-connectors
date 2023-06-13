@@ -7,6 +7,10 @@ terraform {
   }
 }
 
+provider "google" {
+  project = "scc-tf"
+}
+
 resource "google_pubsub_topic" "scc_findings_topic" {
   name = "scc-findings-topic"
 }
