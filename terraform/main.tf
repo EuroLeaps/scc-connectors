@@ -8,11 +8,11 @@ terraform {
 }
 
 provider "google" {
-  project = "scc-tf"
 }
 
 resource "google_pubsub_topic" "scc_findings_topic" {
   name = "scc-findings-topic"
+  project = "scc-tf"
 }
 
 resource "google_scc_notification_config" "scc_findings_export" {
@@ -22,6 +22,6 @@ resource "google_scc_notification_config" "scc_findings_export" {
   pubsub_topic =  google_pubsub_topic.scc_findings_topic.id
 
   streaming_config {
-    filter = "category = state = \"ACTIVE\" AND NOT mute=\"MUTED\""
+    filter = "state = \"ACTIVE\" AND NOT mute=\"MUTED\""
   }
 }
