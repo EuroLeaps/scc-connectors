@@ -100,6 +100,13 @@ resource "google_project_iam_member" "log-writer" {
   depends_on = [google_service_account.default]
 }
 
+resource "google_project_iam_member" "ar-reader" {
+  project = local.gcp_project
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${google_service_account.default.email}"
+  depends_on = [google_service_account.default]
+}
+
 resource "google_storage_bucket" "default" {
   name                        = "${random_id.bucket_prefix.hex}-scc-connector-source" # Every bucket name must be globally unique
   location                    = "US"
@@ -166,6 +173,7 @@ resource "google_cloudfunctions2_function" "default" {
     google_project_iam_member.invoking,
     google_project_iam_member.event-receiving,
     google_project_iam_member.log-writer,
+    google_project_iam_member.ar-reader,
     google_project_service.resource_manager_api,
     google_project_service.cloud_functions_api,
     google_project_service.eventarc_api,
