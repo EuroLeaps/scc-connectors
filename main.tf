@@ -1,3 +1,5 @@
+# TODO enable APIs for pubsub, iam, scc, cloud resource manager, cloud functions, event arc, artifact registry, cloud run
+# cloud build
 terraform {
   required_providers {
     google = {
@@ -9,7 +11,7 @@ terraform {
 
 resource "google_pubsub_topic" "default" {
   name = "scc-findings-topic"
-  project = "scc-tf"
+  project = "scc-tf1"
 }
 
 resource "google_scc_notification_config" "default" {
@@ -30,6 +32,27 @@ resource "random_id" "bucket_prefix" {
 resource "google_service_account" "default" {
   account_id   = "scc-azure-connector-sa"
   display_name = "SCC Azure Connector Service Account"
+}
+
+resource "google_project_iam_member" "invoking" {
+  project = "scc-tf1"
+  role    = "roles/run.invoker"
+  member  = "serviceAccount:${google_service_account.default.email}"
+  depends_on = [google_service_account.default]
+}
+
+resource "google_project_iam_member" "event-receiving" {
+  project = "scc-tf1"
+  role    = "roles/eventarc.eventReceiver"
+  member  = "serviceAccount:${google_service_account.default.email}"
+  depends_on = [google_service_account.default]
+}
+
+resource "google_project_iam_member" "log-writer" {
+  project = "scc-tf1"
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.default.email}"
+  depends_on = [google_service_account.default]
 }
 
 resource "google_storage_bucket" "default" {
@@ -88,4 +111,13 @@ resource "google_cloudfunctions2_function" "default" {
     pubsub_topic   = google_pubsub_topic.default.id
     retry_policy   = "RETRY_POLICY_RETRY"
   }
+
+  depends_on = [
+    google_service_account.default,
+    google_pubsub_topic.default,
+    google_scc_notification_config.default,
+    google_project_iam_member.invoking,
+    google_project_iam_member.event-receiving,
+    google_project_iam_member.log-writer,
+    ]
 }
