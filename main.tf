@@ -7,31 +7,29 @@ terraform {
   }
 }
 
-provider "google" {
-}
-
-resource "google_pubsub_topic" "scc_findings_topic" {
+resource "google_pubsub_topic" "default" {
   name = "scc-findings-topic"
   project = "scc-tf"
 }
 
-resource "google_scc_notification_config" "scc_findings_export" {
+resource "google_scc_notification_config" "default" {
   config_id    = "scc-findings-export"
   organization = "723388619511"
   description  = "Continuous export of SCC findings to Azure Sentinel"
-  pubsub_topic =  google_pubsub_topic.scc_findings_topic.id
+  pubsub_topic =  google_pubsub_topic.default.id
 
   streaming_config {
     filter = "state = \"ACTIVE\" AND NOT mute=\"MUTED\""
   }
 }
 
-data "http" "src_code" {
-  url = "https://raw.githubusercontent.com/EuroAlphabets/integration-scc-sentinel/blob/main/src.zip"
+resource "random_id" "bucket_prefix" {
+  byte_length = 4
 }
 
-resource "random_id" "bucket_prefix" {
-  byte_length = 8
+resource "google_service_account" "default" {
+  account_id   = "scc-azure-connector-sa"
+  display_name = "SCC Azure Connector Service Account"
 }
 
 resource "google_storage_bucket" "default" {
@@ -40,22 +38,28 @@ resource "google_storage_bucket" "default" {
   uniform_bucket_level_access = true
 }
 
+data "archive_file" "default" {
+  type        = "zip"
+  output_path = "/tmp/function-source.zip"
+  source_dir  = "src"
+}
+
 resource "google_storage_bucket_object" "default" {
   name   = "src.zip"
   bucket = google_storage_bucket.default.name
-  source = data.http.config.response_body
+  source = data.archive_file.default.output_path
 }
 
-resource "google_cloudfunctions2_function" "scc_sentinel_connector" {
+resource "google_cloudfunctions2_function" "default" {
   name        = "scc-sentinel-connector"
   location    = "us-central1"
   description = "Cloud Function to send SCC alerts to Azure Sentinel"
 
   build_config {
-    runtime     = "python3.11"
+    runtime     = "python311"
     entry_point = "entry_point_function" # Set the entry point
     environment_variables = {
-      BUILD_CONFIG_TEST = "build_test"
+      
     }
     source {
       storage_source {
@@ -71,17 +75,17 @@ resource "google_cloudfunctions2_function" "scc_sentinel_connector" {
     available_memory   = "256M"
     timeout_seconds    = 60
     environment_variables = {
-      SERVICE_CONFIG_TEST = "config_test"
+      AZURE_LOG_ANALYTICS_CUSTOM_TABLE = "scc_table"
     }
     ingress_settings               = "ALLOW_INTERNAL_ONLY"
     all_traffic_on_latest_revision = true
-    # service_account_email          = google_service_account.default.email
+    service_account_email          = google_service_account.default.email
   }
 
   event_trigger {
     trigger_region = "us-central1"
     event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
-    pubsub_topic   = google_pubsub_topic.scc_findings_topic.id
+    pubsub_topic   = google_pubsub_topic.default.id
     retry_policy   = "RETRY_POLICY_RETRY"
   }
 }
