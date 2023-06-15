@@ -1,4 +1,4 @@
-# GoogleCloud SecurityCommandCenter to AzureSentinel Integration (Sweet Connector)
+# GoogleCloud SecurityCommandCenter to Azure Sentinel Integration (Sweet Connector)
 
 This connector allows you to send security alerts from Google Cloud Security Command Center to Microsoft Azure Sentinel Log Analytics Workspace in almost realtime.
 If you have created a better version of this integration, please do contribute by creating a pull request!
