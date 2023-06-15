@@ -53,7 +53,7 @@ resource "google_project_service" "cloud_build_api" {
 
 resource "google_pubsub_topic" "default" {
   name = "scc-findings-topic"
-  depends_on = [google_project_service.pubsub_api]
+  depends_on = [google_project_service.pubsub_api, google_project_service.resource_manager_api]
 }
 
 resource "google_scc_notification_config" "default" {
@@ -102,7 +102,7 @@ resource "google_project_iam_member" "log-writer" {
 
 resource "google_project_iam_member" "ar-reader" {
   project = local.gcp_project
-  role    = "roles/artifactregistry.reader"
+  role    = "roles/artifactregistry.repoAdmin"
   member  = "serviceAccount:${google_service_account.default.email}"
   depends_on = [google_service_account.default]
 }
