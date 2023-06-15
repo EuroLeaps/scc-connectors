@@ -77,7 +77,7 @@ logger.log_text(f'Retrieved Azure Log Analytics WorkspaceID and Key successfully
 @functions_framework.cloud_event
 def entry_point_function(scc_event):
     try:
-        scc_finding = base64.b64decode(scc_event.data["message"]["data"]).decode()
+        scc_finding = base64.b64decode(scc_event.data["message"]["data"]).decode(errors = 'ignore')
         logger.log_text(f"SCC Finding Received from PubSub: {scc_finding}")
 
         logdata='{"host":"GoogleCloud","source":"SecurityCommandCenter","RawAlert":'+scc_finding+'}'
