@@ -18,21 +18,14 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 
 ### Step-by-Step Setup Instructions
 
-1. Create a continuous pubsub export of SCC Alerts
-2. Set up Azure Sentinel 
+1. Set up Azure Sentinel 
    - Create a Log Analytics Workspace
+2. Create a continuous pubsub export of SCC Alerts
 3. Create a Cloud Function in Google Cloud
    - Download python source code from this Github repository (you don’t need to modify the code)
    - Create .env file and provide credentials OR put the credentials in GCP secrets manager
    - Setup EventArc trigger and deploy the function
 4. Trigger an SCC Alert and run a query on the Sentinel Log Table to view the finding
-
-#### Create a continuous pubsub export of SCC Alerts
-1. Go to GCP Console -> Security Command Center -> Settings -> Continuous Exports
-2. Create a new PubSub Export as shown in the screenshot. This also requires you to create a pubsub topic.
-3. You could also use a query to filter out only certain events (e.g. critical/high severity) that would be exported to the PubSub 
-
-![Alt text](screenshots/1.png?raw=true "SCC PubSub Export")
 
 #### Setting up Azure Sentinel Log Analytics Workspace 1/2
 1. Go to Azure Console -> Log Analytics Workspaces -> Create
@@ -48,6 +41,37 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 3. Take a note of the Primary or Secondary key (either of them). This will be required to construct the SHA256-HMAC authorization header to call the Sentinel data collection API
 
 ![Alt text](screenshots/4.png?raw=true "Agents config")
+
+#### Setup on Google Cloud with Terraform (Easier Option)
+1. Launch a Cloud Shell in the GCP console, and clone this github repo
+```
+git clone https://github.com/EuroAlphabets/integration-scc-sentinel.git
+```
+2. Edit the main.tf file to put your Azure credentials and GCP Project ID as shown below
+```
+locals {
+  gcp_organization = "YOUR_ORG_ID"
+  gcp_project = "YOUR_PROJ_ID"
+  azure_log_analytics_workspace_id = "YOUR_WORKSPACE_ID"
+  azure_log_analytics_authentication_key = "YOUR_KEY"
+  azure_log_analytics_custom_table = "scc_alerts_table"
+}
+```
+3. Let Terraform do the magic. After executing the below commands, you will have the SCC connector running as a Cloud Function.
+```
+terraform init
+terraform validate
+terraform apply
+```
+
+#### Setup on Google Cloud following manual steps
+
+#### Create a continuous pubsub export of SCC Alerts
+1. Go to GCP Console -> Security Command Center -> Settings -> Continuous Exports
+2. Create a new PubSub Export as shown in the screenshot. This also requires you to create a pubsub topic.
+3. You could also use a query to filter out only certain events (e.g. critical/high severity) that would be exported to the PubSub 
+
+![Alt text](screenshots/1.png?raw=true "SCC PubSub Export")
 
 #### Create a Cloud Function in Google Cloud 1/2
 1. Go to GCP Console -> Cloud Functions -> Create Function
