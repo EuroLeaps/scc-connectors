@@ -10,9 +10,10 @@ If you have any feedback, or need any help in setting this up, please reach out 
 
 In the above diagram:
 1. SCC streams security alerts to a PubSub queue
-2. A Cloud function is setup that subscribes to the PubSub queue and gets triggered by EventArc
-3. The Cloud Function calls the Data Collection API of Azure Sentinel with HMAC-SHA256 authorization
-4. On the Azure Sentinel side, the security alert is routed to a custom table in the Log Analytics Workspace
+2. Setup SCC notification and Cloud Function in Google Cloud (via Terraform or manually)
+   - A Cloud function is setup that subscribes to the PubSub queue and gets triggered by EventArc
+   - The Cloud Function calls the Data Collection API of Azure Sentinel with HMAC-SHA256 authorization
+   - On the Azure Sentinel side, the security alert is routed to a custom table in the Log Analytics Workspace
 
 End-to-end latency from when an alert is triggered to when it appears in Sentinel is within a couple of seconds. It does take some time (10-15 minutes) for the first SCC alert to show up in Sentinel, as the Sentinel table gets initialized.
 
