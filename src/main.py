@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import base64
+import json
 import functions_framework
 import requests
 import datetime
@@ -78,9 +79,15 @@ logger.log_text(f'Retrieved Azure Log Analytics WorkspaceID and Key successfully
 def entry_point_function(scc_event):
     try:
         scc_finding = base64.b64decode(scc_event.data["message"]["data"]).decode(errors = 'ignore')
-        logger.log_text(f"SCC Finding Received from PubSub: {scc_finding}")
 
-        logdata='{"host":"GoogleCloud","source":"SecurityCommandCenter","RawAlert":'+scc_finding+'}'
+        scc_finding = json.loads(scc_finding)
+        logdata = { "host":"GoogleCloud",
+                    "source":"SecurityCommandCenter",
+                    "RawAlert": scc_finding
+                    }
+        logdata = json.dumps(logdata)
+        
+        logger.log_text(f"SCC Finding json: {logdata}")
         send_to_sentinel(AZURE_LOG_ANALTYTICS_WORKSPACE_ID, AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY, logdata, AZURE_LOG_ANALYTICS_CUSTOM_TABLE)
     except Exception as e:
         logger.log_text(f'Error in SCC-Sentinel connector: Type {type(e)} Args {e.args} Object {e}', severity="ERROR")
