@@ -1,6 +1,6 @@
-# GoogleCloud SecurityCommandCenter to Azure Sentinel Integration (Sweet Connector)
+# Send SecurityCommandCenter to Azure Sentinel and DataDog
 
-This connector allows you to send security alerts from Google Cloud Security Command Center to Microsoft Azure Sentinel Log Analytics Workspace in almost realtime.
+This connector allows you to send security alerts from Google Cloud Security Command Center to Microsoft Azure Sentinel Log Analytics Workspace or DataDog in almost realtime.
 If you have created a better version of this integration, please do contribute by creating a pull request!
 If you have any feedback, or need any help in setting this up, please reach out to amiacs@gmail.com.
 
@@ -19,8 +19,9 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 
 ### Step-by-Step Setup Instructions
 
-1. Set up Azure Sentinel 
-   - Create a Log Analytics Workspace
+1. Set up the target destination for the security alerts
+   - DataDog (Create a API Key and URL)
+   - Azure Sentinel (Create a Log Analytics Workspace)
 2. Create a continuous pubsub export of SCC Alerts
 3. Create a Cloud Function in Google Cloud
    - Download python source code from this Github repository (you don’t need to modify the code)
@@ -48,14 +49,20 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 ```
 git clone https://github.com/EuroAlphabets/integration-scc-sentinel.git
 ```
-2. Edit the main.tf file to put your Azure credentials and GCP Project ID as shown below
+2. Edit the main.tf file to put your Azure credentials and GCP Project ID as shown below. One or more target destinations will be activated based on the environment variables you provide here.
 ```
 locals {
   gcp_organization = "YOUR_ORG_ID"
   gcp_project = "YOUR_PROJ_ID"
+
+  # provide these to activate Azure connector
   azure_log_analytics_workspace_id = "YOUR_WORKSPACE_ID"
   azure_log_analytics_authentication_key = "YOUR_KEY"
   azure_log_analytics_custom_table = "scc_alerts_table"
+
+  # provide these to activate Datadog connector
+  dd_site = "YOUR DATADOG_URL e.g. datadoghq.eu"
+  dd_api_key = "YOUR_DATADOG_API_KEY"
 }
 ```
 3. Let Terraform do the magic. After executing the below commands, you will have the SCC connector running as a Cloud Function.

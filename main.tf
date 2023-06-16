@@ -1,9 +1,13 @@
 locals {
   gcp_organization = "YOUR_ORG_ID"
   gcp_project = "YOUR_PROJ_ID"
+
+  # provide these to activate Azure connector
   azure_log_analytics_workspace_id = "YOUR_WORKSPACE_ID"
   azure_log_analytics_authentication_key = "YOUR_KEY"
   azure_log_analytics_custom_table = "scc_alerts_table"
+
+  # provide these to activate Datadog connector
   dd_site = "YOUR DATADOG_URL e.g. datadoghq.eu"
   dd_api_key = "YOUR_DATADOG_API_KEY"
 }
