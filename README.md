@@ -82,6 +82,12 @@ terraform apply
 
 ![Alt text](screenshots/5.png?raw=true "Cloud Function")
 
+Please note that the service account used to run the Clouf Function requires following IAM permission:
+- Artifact Registry Repository Administrator
+- Cloud Run Invoker
+- Eventarc Event Receiver
+- Logs Writer
+
 #### Create a Cloud Function in Google Cloud 2/2
 1. Download the code from Github (src/main.py, src/requirements.txt, src/.env.example) and put in in Cloud Function
 2. Select Python3 as the Runtime
