@@ -27,6 +27,14 @@ import google.cloud.logging
 from dotenv import load_dotenv
 load_dotenv()
 
+# Import the Datadog API client
+from datadog_api_client import ApiClient, Configuration
+from datadog_api_client.v1.api.events_api import EventsApi
+from datadog_api_client.v1.model.event_create_request import EventCreateRequest
+
+datadog = False
+azure_sentinel = False
+
 # Setup logging
 client = google.cloud.logging.Client()
 logger = client.logger("SCC_Sentinel_Connector")
@@ -43,7 +51,13 @@ def get_secret_from_secret_manager(secret_id):
     secret_value = response.payload.data.decode('UTF-8')
     return secret_value
 
-# Update the customer ID to your Log Analytics workspace ID
+try:
+    DD_API_KEY = os.environ["DD_API_KEY"]
+    datadog = True
+    logger.log_text(f"DD_API_KEY found {len(DD_API_KEY)}. DataDog integration activated.")
+except KeyError:
+    logger.log_text("DD_API_KEY not found in env file. DataDog integration disabled.")
+
 try:
     AZURE_LOG_ANALTYTICS_WORKSPACE_ID = os.environ["AZURE_LOG_ANALTYTICS_WORKSPACE_ID"]
 except KeyError:
@@ -53,8 +67,7 @@ except KeyError:
         AZURE_LOG_ANALTYTICS_WORKSPACE_ID = get_secret_from_secret_manager("AZURE_LOG_ANALTYTICS_WORKSPACE_ID")
         logger.log_text('Retrieved AZURE_LOG_ANALTYTICS_WORKSPACE_ID')
     else:
-        logger.log_text("PROJECT_ID not found in env file.. Cannot use Secret Manager. Exiting..", severity="ERROR")
-        exit()
+        logger.log_text("PROJECT_ID not found in env file.. Cannot use Secret Manager. Exiting..")
 
 # For the shared key, use either the primary or the secondary Connected Sources client authentication key 
 # If no name is provided as environment variable, then scc_table will be used as default
@@ -67,28 +80,28 @@ except KeyError:
         AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY = get_secret_from_secret_manager("AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY")
         logger.log_text('Retrieved AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY')
     else:
-        logger.log_text("PROJECT_ID not found in env file.. Cannot use Secret Manager. Exiting..", severity="ERROR")
-        exit()
+        logger.log_text("PROJECT_ID not found in env file.. Cannot use Secret Manager. Exiting..")
 
 # The name of the Log Analytics custom table where SCC Alerts will be stored
 AZURE_LOG_ANALYTICS_CUSTOM_TABLE = os.environ.get("AZURE_LOG_ANALYTICS_CUSTOM_TABLE", "scc_table")
-logger.log_text(f'Retrieved Azure Log Analytics WorkspaceID and Key successfully. Custom table: {AZURE_LOG_ANALYTICS_CUSTOM_TABLE} GCP ProjectID: {PROJECT_ID}')
+
+if AZURE_LOG_ANALTYTICS_WORKSPACE_ID != "" and AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY != "":
+    azure_sentinel = True
+    logger.log_text(f'Retrieved Azure Log Analytics WorkspaceID {len(AZURE_LOG_ANALTYTICS_WORKSPACE_ID)} and Key {len(AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY)} successfully. Custom table: {AZURE_LOG_ANALYTICS_CUSTOM_TABLE} GCP ProjectID: {PROJECT_ID}. Azure integration activated.')
+else:
+    logger.log_text(f'Cannot retrieved Azure Log Analytics WorkspaceID or Key successfully. Azure integration disabled.')
 
 # Triggered from a message on SCC Cloud Pub/Sub topic.
 @functions_framework.cloud_event
 def entry_point_function(scc_event):
     try:
         scc_finding = base64.b64decode(scc_event.data["message"]["data"]).decode(errors = 'ignore')
-
-        scc_finding = json.loads(scc_finding)
-        logdata = { "host":"GoogleCloud",
-                    "source":"SecurityCommandCenter",
-                    "RawAlert": scc_finding
-                    }
-        logdata = json.dumps(logdata)
+        scc_finding_json = json.loads(scc_finding)
         
-        logger.log_text(f"SCC Finding json: {logdata}")
-        send_to_sentinel(AZURE_LOG_ANALTYTICS_WORKSPACE_ID, AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY, logdata, AZURE_LOG_ANALYTICS_CUSTOM_TABLE)
+        if azure_sentinel:
+            send_to_sentinel(AZURE_LOG_ANALTYTICS_WORKSPACE_ID, AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY, scc_finding_json, AZURE_LOG_ANALYTICS_CUSTOM_TABLE)
+        if datadog:
+            send_to_datadog(scc_finding_json)
     except Exception as e:
         logger.log_text(f'Error in SCC-Sentinel connector: Type {type(e)} Args {e.args} Object {e}', severity="ERROR")
 
@@ -103,8 +116,16 @@ def build_signature(customer_id, shared_key, date, content_length, method, conte
     return authorization
 
 # Build and send a request to the POST API
-def send_to_sentinel(law_id, auth_key, logdata, table_name):
+def send_to_sentinel(law_id, auth_key, scc_finding_json, table_name):
     logger.log_text("Sending SCC Alert log to Azure Sentinel..")
+
+    logdata = { "host":"GoogleCloud",
+                "source":"SecurityCommandCenter",
+                "RawAlert": scc_finding_json
+                }
+    logdata = json.dumps(logdata)
+    logger.log_text(f"SCC Finding json: {logdata}")
+    
     method = 'POST'
     content_type = 'application/json'
     resource = '/api/logs'
@@ -125,3 +146,21 @@ def send_to_sentinel(law_id, auth_key, logdata, table_name):
         logger.log_text(f'Sentinel API call successful with response code {response.status_code}')
     else:
         logger.log_text(f"Error calling Sentinel API, response code: {response.status_code}", severity="ERROR")
+
+def send_to_datadog(scc_finding_json):
+    body = EventCreateRequest(
+        title="Google Cloud Security Command Center Alert: " + scc_finding_json['finding']['category'],
+        text=json.dumps(scc_finding_json),
+        alert_type="warning",
+        source_type_name="Google Cloud Platform",
+        tags=[
+            "source:Security Command Center",
+        ],
+    )
+
+    configuration = Configuration()
+    with ApiClient(configuration) as api_client:
+        api_instance = EventsApi(api_client)
+        response = api_instance.create_event(body=body)
+
+    logger.log_text(f'DataDog API response: {response}')

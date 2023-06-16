@@ -3,3 +3,4 @@ requests
 python-dotenv
 google-cloud-secret-manager
 google-cloud-logging
+datadog-api-client

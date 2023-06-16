@@ -4,6 +4,8 @@ locals {
   azure_log_analytics_workspace_id = "YOUR_WORKSPACE_ID"
   azure_log_analytics_authentication_key = "YOUR_KEY"
   azure_log_analytics_custom_table = "scc_alerts_table"
+  dd_site = "YOUR DATADOG_URL e.g. datadoghq.eu"
+  dd_api_key = "YOUR_DATADOG_API_KEY"
 }
   
 terraform {
@@ -53,7 +55,7 @@ resource "google_project_service" "cloud_build_api" {
 
 resource "google_pubsub_topic" "default" {
   name = "scc-findings-topic"
-  depends_on = [google_project_service.pubsub_api, google_project_service.resource_manager_api]
+  depends_on = [google_project_service.pubsub_api]
 }
 
 resource "google_scc_notification_config" "default" {
@@ -153,6 +155,9 @@ resource "google_cloudfunctions2_function" "default" {
       AZURE_LOG_ANALTYTICS_WORKSPACE_ID = local.azure_log_analytics_workspace_id
       AZURE_LOG_ANALYTICS_AUTHENTICATION_KEY = local.azure_log_analytics_authentication_key
       AZURE_LOG_ANALYTICS_CUSTOM_TABLE = local.azure_log_analytics_custom_table
+
+      DD_SITE = local.dd_site
+      DD_API_KEY = local.dd_api_key
     }
     ingress_settings               = "ALLOW_INTERNAL_ONLY"
     all_traffic_on_latest_revision = true
