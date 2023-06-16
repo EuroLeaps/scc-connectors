@@ -1,4 +1,4 @@
-# Send SecurityCommandCenter to Azure Sentinel and DataDog
+# Send SecurityCommandCenter Alerts to Azure Sentinel and DataDog
 
 This connector allows you to send security alerts from Google Cloud Security Command Center to Microsoft Azure Sentinel Log Analytics Workspace or DataDog in almost realtime.
 If you have created a better version of this integration, please do contribute by creating a pull request!
