@@ -128,6 +128,16 @@ Also, as a best practice, you can save the Log Analytics Workspace ID and Key in
 
 ![Alt text](screenshots/7.png?raw=true "SCC Alerts in Sentinel")
 
+#### View SCC Alerts in DataDog Events Explorer
+1. Trigger an SCC Alert in GCP Console (e.g. by opening a firewall port)
+2. Go to DataDog -> Event Explorer
+
+![Alt text](screenshots/DataDog/2.png?raw=true "SCC Alerts in DataDog")
+
+![Alt text](screenshots/DataDog/3.png?raw=true "SCC Alerts in DataDog")
+
+![Alt text](screenshots/DataDog/4.png?raw=true "SCC Alerts in DataDog")
+
 ### Troubleshooting
 If the connector does not work, please inspect the logs in Google Cloud Logging as in the screenshot below.
 
