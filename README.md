@@ -44,6 +44,12 @@ End-to-end latency from when an alert is triggered to when it appears in Sentine
 
 ![Alt text](screenshots/4.png?raw=true "Agents config")
 
+#### Setting up DataDog
+1. Go to DataDog -> Organization Settings -> API Keys
+2. Determine your endpoint URL: for e.g. datadoghq.eu or datadoghq.com
+
+![Alt text](screenshots/DataDog/1.png?raw=true "Obtaining DataDog API Key")
+
 #### Setup on Google Cloud with Terraform (Easier Option)
 1. Launch a Cloud Shell in the GCP console, and clone this github repo
 ```
