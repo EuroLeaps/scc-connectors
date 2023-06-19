@@ -4,6 +4,14 @@ This connector allows you to send security alerts from Google Cloud Security Com
 If you have created a better version of this integration, please do contribute by creating a pull request!
 If you have any feedback, or need any help in setting this up, please reach out to amiacs@gmail.com.
 
+### Change Log
+- 2023-06-16 Support DataDog integration
+- 2023-06-15 Fix for UnicodeEncodeError
+- 2023-06-14 Support Deployment via Terraform
+- 2023-06-07 Logging enhancements
+- 2023-03-19 Support GCP Secret Manager to store secrets, in addition to using environment variables
+- 2023-02-06 First version with support for Azure Log Analytics
+
 ### Architecture Flow
 
 ![Alt text](architecture.png?raw=true "Integration Architecture")
